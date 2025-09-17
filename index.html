@@ -1,195 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>WeatherIQ</title>
-  <link href="bootstrap.min.css" rel="stylesheet"> 
- 
-  <style>
-    body { background: #eef6f9; display: flex; flex-direction: column; min-height: 100vh; }
-    .card { margin: 10px 0; border-radius: 15px; }
-    .weather-icon { width: 60px; }
-    .risk { font-weight: bold; }
-    footer { margin-top: auto; background: transparent; }
-    .small-risk { font-size: 0.85rem; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Weather App</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #eef6f9; display: flex; flex-direction: column; min-height: 100vh; }
+    .card { margin: 10px 0; border-radius: 15px; }
+    .weather-icon { width: 60px; }
+    .risk { font-weight: bold; }
+    footer { margin-top: auto; background: transparent; }
+    .small-risk { font-size: 0.85rem; }
+  </style>
 </head>
 <body>
 <div class="container py-4">
-  <h2 class="text-center mb-4">🌦 WeatherIQ</h2>
- 
-  <!-- Responsive input box -->
-  <div class="row justify-content-center mb-3">
-    <div class="col-12 col-md-6">
-      <div class="input-group">
-        <input type="text" id="cityInput" class="form-control"
-               placeholder="Enter city name" list="cityList"
-               oninput="fetchCitySuggestions(this.value)">
-        <datalist id="cityList"></datalist>
-        <button class="btn btn-primary" onclick="getWeather()">Get Weather</button>
-      </div>
-    </div>
-  </div>
- 
-  <div id="weatherResult"></div>
+  <h2 class="text-center mb-4">🌦 Smart Weather App</h2>
+  
+  <!-- Responsive input box -->
+  <div class="row justify-content-center mb-3">
+    <div class="col-12 col-md-6">
+      <div class="input-group">
+        <input type="text" id="cityInput" class="form-control" 
+               placeholder="Enter city name" list="cityList" 
+               oninput="fetchCitySuggestions(this.value)">
+        <datalist id="cityList"></datalist>
+        <button class="btn btn-primary" onclick="getWeather()">Get Weather</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="weatherResult"></div>
 </div>
- 
+
 <!-- Transparent Footer -->
 <footer class="text-center py-3">
-  <small>© 2025 WeatherIQ | Powered by OpenWeatherMap</small>
+  <small>© 2025 Smart Weather App | Powered by OpenWeatherMap</small>
 </footer>
- 
+
 <script>
-const apiKey = "1af3b1a4f3e14c38dd385f5c9b09d4c0"; // 🔑 Replace with your OpenWeatherMap API key
- 
+const apiKey = "YOUR_API_KEY"; // 🔑 Replace with your OpenWeatherMap API key
+
 // Fetch city suggestions
 async function fetchCitySuggestions(query) {
-  if (query.length < 3) return;
-  try {
-    const url = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${apiKey}`;
-    const res = await fetch(url);
-    const cities = await res.json();
- 
-    let options = "";
-    cities.forEach(city => {
-      options += `<option value="${city.name}, ${city.country}">`;
-    });
-    document.getElementById("cityList").innerHTML = options;
-  } catch (err) {
-    console.error("City autocomplete error:", err);
-  }
+  if (query.length < 3) return;
+  try {
+    const url = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${apiKey}`;
+    const res = await fetch(url);
+    const cities = await res.json();
+
+    let options = "";
+    cities.forEach(city => {
+      options += `<option value="${city.name}, ${city.country}">`;
+    });
+    document.getElementById("cityList").innerHTML = options;
+  } catch (err) {
+    console.error("City autocomplete error:", err);
+  }
 }
- 
+
 // Fetch weather data
 async function getWeather() {
-  const city = document.getElementById("cityInput").value;
-  if (!city) return alert("Please enter a city");
- 
-  const currentUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-  const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`;
- 
-  try {
-    const [currentRes, forecastRes] = await Promise.all([
-      fetch(currentUrl),
-      fetch(forecastUrl)
-    ]);
- 
-    const currentData = await currentRes.json();
-    const forecastData = await forecastRes.json();
- 
-    displayWeather(currentData, forecastData);
-  } catch (err) {
-    console.error(err);
-    alert("Error fetching weather data");
-  }
+  const city = document.getElementById("cityInput").value;
+  if (!city) return alert("Please enter a city");
+
+  const currentUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+  const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`;
+
+  try {
+    const [currentRes, forecastRes] = await Promise.all([
+      fetch(currentUrl),
+      fetch(forecastUrl)
+    ]);
+
+    const currentData = await currentRes.json();
+    const forecastData = await forecastRes.json();
+
+    displayWeather(currentData, forecastData);
+  } catch (err) {
+    console.error(err);
+    alert("Error fetching weather data");
+  }
 }
- 
+
 // Risk calculation per day
 function calculateRisksForDay(dayForecasts) {
-  const totalRain = dayForecasts.reduce((acc, f) => acc + (f.rain ? f.rain["3h"] || 0 : 0), 0);
- 
-  let risks = [];
-  let color = "success";
- 
-  if (totalRain > 50) {
-    color = "danger";
-    risks.push({ msg: "⚠️ High flood risk", color });
-    risks.push({ msg: "⚠️ Landslide possible in hilly areas", color });
-    risks.push({ msg: "⚠️ Cloudburst risk due to heavy rain", color });
-  } else if (totalRain > 20) {
-    color = "warning";
-    risks.push({ msg: "⚠️ Moderate flood risk", color });
-  } else if (totalRain > 5) {
-    color = "info";
-    risks.push({ msg: "🌧 Light rain expected", color });
-  } else {
-    color = "success";
-    risks.push({ msg: "✅ No major risks", color });
-  }
- 
-  return { totalRain, color, risks };
+  const totalRain = dayForecasts.reduce((acc, f) => acc + (f.rain ? f.rain["3h"] || 0 : 0), 0);
+
+  let risks = [];
+  let color = "success";
+
+  if (totalRain > 50) {
+    color = "danger";
+    risks.push({ msg: "⚠️ High flood risk", color });
+    risks.push({ msg: "⚠️ Landslide possible in hilly areas", color });
+    risks.push({ msg: "⚠️ Cloudburst risk due to heavy rain", color });
+  } else if (totalRain > 20) {
+    color = "warning";
+    risks.push({ msg: "⚠️ Moderate flood risk", color });
+  } else if (totalRain > 5) {
+    color = "info";
+    risks.push({ msg: "🌧 Light rain expected", color });
+  } else {
+    color = "success";
+    risks.push({ msg: "✅ No major risks", color });
+  }
+
+  return { totalRain, color, risks };
 }
- 
+
 // Display weather
 function displayWeather(current, forecast) {
-  if (current.cod !== 200) {
-    document.getElementById("weatherResult").innerHTML = `<div class="alert alert-danger">${current.message}</div>`;
-    return;
-  }
- 
-  // Group forecasts by date
-  const forecastByDate = {};
-  forecast.list.forEach(f => {
-    const date = f.dt_txt.split(" ")[0];
-    if (!forecastByDate[date]) forecastByDate[date] = [];
-    forecastByDate[date].push(f);
-  });
- 
-  // Today’s risks
-  const today = new Date().toISOString().split("T")[0];
-  const todayRisks = calculateRisksForDay(forecastByDate[today] || []);
- 
-  let html = `
-    <div class="card p-3 shadow-sm">
-      <div class="d-flex align-items-center">
-        <div class="me-3">
-          <img class="weather-icon" src=http://openweathermap.org/img/wn/${current.weather[0].icon}@2x.png alt="icon">
-        </div>
-        <div>
-          <h4>${current.name}, ${current.sys.country}</h4>
-          <p><b>${current.main.temp}°C</b>, ${current.weather[0].description}</p>
-          <p>Humidity: ${current.main.humidity}% | Wind: ${current.wind.speed} m/s</p>
-        </div>
-      </div>
-      <div class="mt-3">
-        <h5>🌍 Risk Alerts (Today)</h5>
-        ${todayRisks.risks.map(r => `<div class="alert alert-${r.color} risk">${r.msg}</div>`).join("")}
-      </div>
-    </div>
-  `;
- 
-  // Hourly Forecast (next 24h)
-  html += `<h5 class="mt-4">⏰ Hourly Forecast (Next 24h)</h5><div class="row">`;
-  forecast.list.slice(0, 8).forEach(f => {
-    html += `
-      <div class="col-6 col-md-3">
-        <div class="card p-2 text-center shadow-sm">
-          <p><b>${new Date(f.dt_txt).getHours()}:00</b></p>
-          <img class="weather-icon" src=http://openweathermap.org/img/wn/${f.weather[0].icon}.png>
-          <p>${f.main.temp}°C</p>
-          <p>${f.weather[0].main}</p>
-        </div>
-      </div>
-    `;
-  });
-  html += `</div>`;
- 
-  // 5-day Forecast with risks
-  html += `<h5 class="mt-4">📅 5-Day Forecast & Risk Predictions</h5><div class="row">`;
-  const daily = Object.entries(forecastByDate).slice(0, 5);
- 
-  daily.forEach(([date, dayForecasts]) => {
-    const d = new Date(date);
-    const { risks } = calculateRisksForDay(dayForecasts);
-    const midday = dayForecasts.find(f => f.dt_txt.includes("12:00:00")) || dayForecasts[0];
- 
-    html += `
-      <div class="col-12 col-md-4 col-lg-2">
-        <div class="card p-2 text-center shadow-sm">
-          <p><b>${d.toDateString()}</b></p>
-          <img class="weather-icon" src=http://openweathermap.org/img/wn/${midday.weather[0].icon}.png>
-          <p>${midday.main.temp}°C</p>
-          <p>${midday.weather[0].main}</p>
-          <div class="mt-2">
-            ${risks.map(r => `<div class="alert alert-${r.color} small-risk">${r.msg}</div>`).join("")}
-          </div>
-        </div>
-      </div>
-    `;
-  });
-  html += `</div>`;
- 
-  document.getElementById("weatherResult").innerHTML = html;
+  if (current.cod !== 200) {
+    document.getElementById("weatherResult").innerHTML = `<div class="alert alert-danger">${current.message}</div>`;
+    return;
+  }
+
+  // Group forecasts by date
+  const forecastByDate = {};
+  forecast.list.forEach(f => {
+    const date = f.dt_txt.split(" ")[0];
+    if (!forecastByDate[date]) forecastByDate[date] = [];
+    forecastByDate[date].push(f);
+  });
+
+  // Today’s risks
+  const today = new Date().toISOString().split("T")[0];
+  const todayRisks = calculateRisksForDay(forecastByDate[today] || []);
+
+  let html = `
+    <div class="card p-3 shadow-sm">
+      <div class="d-flex align-items-center">
+        <div class="me-3">
+          <img class="weather-icon" src="http://openweathermap.org/img/wn/${current.weather[0].icon}@2x.png" alt="icon">
+        </div>
+        <div>
+          <h4>${current.name}, ${current.sys.country}</h4>
+          <p><b>${current.main.temp}°C</b>, ${current.weather[0].description}</p>
+          <p>Humidity: ${current.main.humidity}% | Wind: ${current.wind.speed} m/s</p>
+        </div>
+      </div>
+      <div class="mt-3">
+        <h5>🌍 Risk Alerts (Today)</h5>
+        ${todayRisks.risks.map(r => `<div class="alert alert-${r.color} risk">${r.msg}</div>`).join("")}
+      </div>
+    </div>
+  `;
+
+  // Hourly Forecast (next 24h)
+  html += `<h5 class="mt-4">⏰ Hourly Forecast (Next 24h)</h5><div class="row">`;
+  forecast.list.slice(0, 8).forEach(f => {
+    html += `
+      <div class="col-6 col-md-3">
+        <div class="card p-2 text-center shadow-sm">
+          <p><b>${new Date(f.dt_txt).getHours()}:00</b></p>
+          <img class="weather-icon" src="http://openweathermap.org/img/wn/${f.weather[0].icon}.png">
+          <p>${f.main.temp}°C</p>
+          <p>${f.weather[0].main}</p>
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  // 5-day Forecast with risks
+  html += `<h5 class="mt-4">📅 5-Day Forecast & Risk Predictions</h5><div class="row">`;
+  const daily = Object.entries(forecastByDate).slice(0, 5);
+
+  daily.forEach(([date, dayForecasts]) => {
+    const d = new Date(date);
+    const { risks } = calculateRisksForDay(dayForecasts);
+    const midday = dayForecasts.find(f => f.dt_txt.includes("12:00:00")) || dayForecasts[0];
+
+    html += `
+      <div class="col-12 col-md-4 col-lg-2">
+        <div class="card p-2 text-center shadow-sm">
+          <p><b>${d.toDateString()}</b></p>
+          <img class="weather-icon" src="http://openweathermap.org/img/wn/${midday.weather[0].icon}.png">
+          <p>${midday.main.temp}°C</p>
+          <p>${midday.weather[0].main}</p>
+          <div class="mt-2">
+            ${risks.map(r => `<div class="alert alert-${r.color} small-risk">${r.msg}</div>`).join("")}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  document.getElementById("weatherResult").innerHTML = html;
 }
 </script>
 </body>
